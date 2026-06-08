@@ -1,0 +1,20 @@
+# Cost-center funds for Concur allocation.
+#
+# In the Monash Concur "Allocate" panel the fund splits into TWO fields:
+#   - Cost Centre  (e.g. "Some Centre (XNNNNN)")
+#   - Fund         (e.g. "Some Fund (NNNNNNN)")
+# The combined picker option reads: "<Fund name> (<CostCentre>-<Fund>)".
+# `code` is the "<CostCentre> <Fund>" pair you recognise; the skill matches it
+# against the picker's Most-Recently-Used list.
+#
+# Replace the placeholders below with your own. Mark exactly one as default: true.
+
+default_fund: "XXXXXX NNNNNNN"
+
+funds:
+  - code: "XXXXXX NNNNNNN"
+    label: "Default fund — rename me"
+    default: true
+  # - code: "YYYYYY NNNNNNN"
+  #   label: "Grant / project name"
+  #   default: false
