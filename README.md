@@ -2,8 +2,28 @@
 
 A collection of [Claude Code](https://claude.com/claude-code) skills.
 
+## Quickstart
+
+Install with the [`skills`](https://www.npmjs.com/package/skills) CLI (~30 seconds):
+
+```bash
+npx skills@latest add rdahis/skills
+```
+
+Select the skills you want and the coding agents to install them on. That's it — invoke a skill by name (e.g. `/concur-expense`) in your agent.
+
+Prefer to do it by hand? Clone the repo and copy a skill folder into your skills directory:
+
+```bash
+git clone https://github.com/rdahis/skills.git
+cp -r skills/skills/productivity/concur-expense ~/.claude/skills/
+```
+
+## Skills
+
+### Productivity
 | Skill | Description |
 |-------|-------------|
-| [`concur-expense`](concur-expense/) | Turn a folder of receipts into a SAP Concur expense claim — read receipts, build the report, attach images, allocate to a fund. Draft-only unless you opt in to submit. |
+| [`concur-expense`](skills/productivity/concur-expense/SKILL.md) | Turn a folder of receipts into a SAP Concur expense claim — read receipts, build the report, attach images, allocate to a fund. Draft-only unless you opt in to submit. |
 
-Each skill folder is self-contained. See its `README.md` for requirements, installation, and usage.
+Each skill folder is self-contained; see its `README.md` for requirements, installation, and usage.

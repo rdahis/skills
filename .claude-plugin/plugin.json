@@ -1,0 +1,6 @@
+{
+  "name": "rdahis-skills",
+  "skills": [
+    "./skills/productivity/concur-expense"
+  ]
+}

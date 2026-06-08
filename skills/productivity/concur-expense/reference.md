@@ -4,7 +4,8 @@
 > Tuned against **Monash University's** SAP Concur (`us2.concursolutions.com`). Expense-type names and the allocation field layout are Monash-specific; adapt for other institutions.
 
 ## URL
-- Concur entry URL: **TODO — set on first run** (your institution's SAP Concur / SSO entry link). The skill saves it here after you provide it once.
+- Concur entry URL (Monash University): `https://www-us.api.concursolutions.com/sso/saml2/V2/authnrequest/30aaba59-2df8-4d54-870d-3974b06782b5/1582495419386`
+- **First run:** if the user is **not** at Monash University, ask for their institution's SAP Concur / SSO entry URL and replace the line above.
 
 ## Login
 - Manual SSO + MFA in the Playwright browser. The persistent profile usually retains the session between runs.

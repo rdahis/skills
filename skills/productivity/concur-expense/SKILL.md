@@ -50,7 +50,7 @@ Present a compact table: file | vendor | date | amount | currency | category gue
 - **Do not proceed to the browser until the user confirms.**
 
 ### Step 3 — Open Concur, hand off for login
-1. `browser_navigate` to the Concur entry URL in `reference.md` (first run: ask the user for the exact SAP Concur / SSO entry URL, then save it to `reference.md`).
+1. `browser_navigate` to the Concur entry URL in `reference.md` (defaults to Monash University's). On the **first run only**, confirm the user is at Monash; if not, ask for their institution's SAP Concur / SSO entry URL and save it to `reference.md`.
 2. `browser_snapshot`. If a login / SSO page is shown, tell the user:
    *"Log in to Concur in the browser window (SSO + MFA). Tell me when you're on the Concur home page."*
 3. Wait for the user. The persistent profile usually keeps the session between runs.

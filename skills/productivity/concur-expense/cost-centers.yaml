@@ -7,9 +7,8 @@
 # `code` is the "<CostCentre> <Fund>" pair you recognise; the skill matches it
 # against the picker's Most-Recently-Used list.
 #
-# Replace the placeholders below with your own. Mark exactly one as default: true.
-
-default_fund: "XXXXXX NNNNNNN"
+# Replace the placeholders below with your own. Mark exactly one entry default: true —
+# that is the fund the skill uses unless a `fund:CODE` argument overrides it.
 
 funds:
   - code: "XXXXXX NNNNNNN"

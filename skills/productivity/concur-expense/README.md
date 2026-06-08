@@ -21,18 +21,26 @@ Built and tuned against **Monash University's** SAP Concur. The workflow is gene
 
 ## Installation
 
-1. Copy the `concur-expense/` folder into your Claude Code skills directory:
-   - Personal (all projects): `~/.claude/skills/concur-expense/`
-   - Or per-project: `<project>/.claude/skills/concur-expense/`
+Quickest — the [`skills`](https://www.npmjs.com/package/skills) CLI:
 
-   ```bash
-   git clone https://github.com/rdahis/skills.git
-   cp -r skills/concur-expense ~/.claude/skills/
-   ```
+```bash
+npx skills@latest add rdahis/skills
+```
 
-2. Edit `cost-centers.yaml` and replace the placeholder with your own fund code(s). Mark exactly one `default: true`.
+…then select `concur-expense` and the agent to install it on.
 
-3. On the **first run**, Claude will ask for your Concur SSO entry URL and save it into `reference.md` for next time.
+Manual alternative — copy the folder into your Claude Code skills directory:
+
+```bash
+git clone https://github.com/rdahis/skills.git
+cp -r skills/skills/productivity/concur-expense ~/.claude/skills/
+```
+
+Then configure:
+
+1. Edit `cost-centers.yaml` and replace the placeholder with your own fund code(s). Mark exactly one `default: true` — that entry is the fund used unless a `fund:CODE` argument overrides it.
+
+2. The Concur entry URL is preset to **Monash University's**. If you're elsewhere, the skill asks for your institution's SSO entry URL on the first run and saves it into `reference.md`.
 
 ## Usage
 
@@ -71,7 +79,7 @@ Examples:
 - **Draft-only by default.** It will not submit unless you pass `submit` *and* confirm at the end.
 - **No guessing.** Amounts, dates, and GST come from the receipt; anything unreadable is flagged, not invented.
 - **No credentials handled.** You do the login in the browser window.
-- **No personal identifiers committed.** Your fund codes live only in your local `cost-centers.yaml`; the entry URL lives only in your local `reference.md`.
+- **No personal identifiers committed.** Your fund codes stay in your local `cost-centers.yaml` as placeholders here. The only preset value is Monash University's public SSO entry URL (an endpoint, not a secret) — swapped on first run if you're elsewhere.
 
 ## Files
 
