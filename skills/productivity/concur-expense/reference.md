@@ -12,8 +12,8 @@
 - **Auto-detect login — do not ask the user when they are done.** After navigating to the entry URL, poll: `browser_snapshot` (or `browser_wait_for`), and if the page is still Okta/SSO, wait and re-`browser_snapshot`. Proceed automatically once `Page URL` is `https://us2.concursolutions.com/home` (or any `us2.concursolutions.com/*` app page). Tell the user once ("Log in — I'll detect when you land on the Concur home page and continue") then poll silently rather than waiting for a "I'm there" message.
 
 ## Navigation
-- **Create report:** Home → "Create Expense Report" → dialog (Report Name*, Report Date auto, Comment) → Create Report. No header-level business-purpose field.
-- **Open existing report:** Home list, or navigate to `/nui/expense/report/<id>`. New lines append to its total.
+- **Create report:** Home → "Create Expense Claim" (the home tile is "Create Expense Claim"; the report list button is also "Create Expense Claim") → dialog (Report Name*, Report Date auto, Comment) → Create Claim. No header-level business-purpose field. Concur calls reports "Claims" throughout this UI.
+- **Open existing report:** Home list, or navigate to `/nui/expense/reports/<id>` (note the plural `reports`). New lines append to its total. A freshly created claim's id appears in the URL after Create Claim.
 - **Add a line:** report page → "Add Expense" → "Manually Create Expense" → pick expense type → Details form.
 - **Attach receipt:** right-side Receipt panel → "Upload New Receipt" (opens a file chooser → `browser_file_upload`).
 - **Allocate:** open the entry → "Allocate" (this auto-saves the entry) → "Add" → New Allocation tab.

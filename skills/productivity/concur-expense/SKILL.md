@@ -7,7 +7,7 @@ description: Build a SAP Concur expense claim via Playwright — from local rece
 *Builds a Concur expense report from local receipts and/or corporate-card transactions, and stops before submit unless you opt in.*
 
 ## Hard rules
-1. **Draft-only by default. NEVER click Submit unless the `submit` argument was passed AND the user confirms at the end (Step 6).** When in doubt, leave the draft for the user.
+1. **Draft-only by default. NEVER click Submit (the "Submit Claim" button) unless the `submit` argument was passed AND the user confirms at the end (Step 6).** When in doubt, leave the draft for the user.
 2. **NEVER guess receipt amounts, dates, or GST.** Extract them from the receipt. If a field is unreadable or absent, ask.
 3. **Confirm extracted data with the user before touching the browser.** Cheap check, avoids garbage in Concur.
 4. Login is **manual** — the user signs in (SSO + MFA) in the Playwright browser; only then proceed. Never type credentials.
@@ -63,8 +63,8 @@ Present a compact table: file | vendor | date | amount | currency | category gue
 3. Wait for the user. The persistent profile usually keeps the session between runs.
 
 ### Step 4 — Create or open the report
-1. New report: Concur home → "Create Expense Report" → fill the header (report name, date, any required policy fields).
-2. Existing report: open it from the home list, or navigate to `/nui/expense/report/<id>`, then add lines to it.
+1. New report: Concur home → "Create Expense Claim" → fill the header (report name, date, any required policy fields) → Create Claim. (Concur labels reports "Claims".)
+2. Existing report: open it from the home list, or navigate to `/nui/expense/reports/<id>` (plural `reports`), then add lines to it.
 3. `browser_snapshot` after each navigation; act on what the snapshot shows. The Concur DOM is dynamic — re-snapshot rather than reuse stale element refs.
 
 ### Step 5 — Add each expense (one line per receipt)
@@ -96,7 +96,7 @@ Use this instead of Step 5 when `cards` was passed. Card lines already carry ven
 2. Report to the user: report name & number, line count, total, fund(s) used, and any receipts skipped or flagged.
 3. **If `submit` was NOT passed:** hand off — *"Draft is ready in Concur. Review and Submit yourself."* Done.
 4. **If `submit` WAS passed:** show the summary and ask for an explicit yes/no confirmation to submit (submission is outward-facing and hard to reverse). Only on an explicit "yes":
-   - Click **Submit Report**.
+   - Click **Submit Claim**.
    - Handle any policy/agreement confirmation dialog that appears (read it; proceed only if it is the expected submit confirmation).
    - `browser_snapshot` to confirm the report status changed to Submitted; screenshot and report the result.
    - If a blocking validation error prevents submission, do not force it — report the error and leave the draft.
