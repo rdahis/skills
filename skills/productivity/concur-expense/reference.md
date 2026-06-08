@@ -17,6 +17,7 @@
 - **Add a line:** report page → "Add Expense" → "Manually Create Expense" → pick expense type → Details form.
 - **Attach receipt:** right-side Receipt panel → "Upload New Receipt" (opens a file chooser → `browser_file_upload`).
 - **Allocate:** open the entry → "Allocate" (this auto-saves the entry) → "Add" → New Allocation tab.
+- **Import card transactions:** report page → "Add Expense" → "Select from Available Expenses (N)" → tick rows → "Add to Claim"/"Move to". If N is 0, the Manage Expenses page (`/nui/expense`) has an **Available Expenses** section with a "Card Transactions" button to pull the latest card feed. Imported lines arrive with vendor/date/amount filled and expense type often "Undefined" — set the type, fill required fields, allocate, attach a matched receipt, then Save Expense (same per-line order as below).
 
 ## Per-line order that avoids the post-save error popup
 Fill all Details fields → Upload receipt → **Allocate** (auto-saves) → Add fund → 100% → Save allocation → Save the Allocate dialog → **Save Expense**.
