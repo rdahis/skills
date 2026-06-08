@@ -9,6 +9,7 @@
 
 ## Login
 - Manual SSO + MFA in the Playwright browser. The persistent profile usually retains the session between runs.
+- **Auto-detect login — do not ask the user when they are done.** After navigating to the entry URL, poll: `browser_snapshot` (or `browser_wait_for`), and if the page is still Okta/SSO, wait and re-`browser_snapshot`. Proceed automatically once `Page URL` is `https://us2.concursolutions.com/home` (or any `us2.concursolutions.com/*` app page). Tell the user once ("Log in — I'll detect when you land on the Concur home page and continue") then poll silently rather than waiting for a "I'm there" message.
 
 ## Navigation
 - **Create report:** Home → "Create Expense Report" → dialog (Report Name*, Report Date auto, Comment) → Create Report. No header-level business-purpose field.
