@@ -8,14 +8,14 @@
 - **First run:** if the user is **not** at Monash University, ask for their institution's SAP Concur / SSO entry URL and replace the line above.
 
 ## Login
-- Manual SSO + MFA in the Playwright browser. The persistent profile usually retains the session between runs.
-- **Auto-detect login — do not ask the user when they are done.** After navigating to the entry URL, poll: `browser_snapshot` (or `browser_wait_for`), and if the page is still Okta/SSO, wait and re-`browser_snapshot`. Proceed automatically once `Page URL` is `https://us2.concursolutions.com/home` (or any `us2.concursolutions.com/*` app page). Tell the user once ("Log in — I'll detect when you land on the Concur home page and continue") then poll silently rather than waiting for a "I'm there" message.
+- Manual SSO + MFA in the user's Chrome tab. Claude-in-Chrome reuses the user's real Chrome session, so the Concur login normally persists between runs — check first; you are often already logged in.
+- **Auto-detect login — do not ask the user when they are done.** After navigating to the entry URL, poll: `read_page`, and if the page is still Okta/SSO, wait and re-`read_page`. Proceed automatically once `Page URL` is `https://us2.concursolutions.com/home` (or any `us2.concursolutions.com/*` app page). Tell the user once ("Log in — I'll detect when you land on the Concur home page and continue") then poll silently rather than waiting for a "I'm there" message.
 
 ## Navigation
 - **Create report:** Home → "Create Expense Claim" (the home tile is "Create Expense Claim"; the report list button is also "Create Expense Claim") → dialog (Report Name*, Report Date auto, Comment) → Create Claim. No header-level business-purpose field. Concur calls reports "Claims" throughout this UI.
 - **Open existing report:** Home list, or navigate to `/nui/expense/reports/<id>` (note the plural `reports`). New lines append to its total. A freshly created claim's id appears in the URL after Create Claim.
 - **Add a line:** report page → "Add Expense" → "Manually Create Expense" → pick expense type → Details form.
-- **Attach receipt:** right-side Receipt panel → "Upload New Receipt" (opens a file chooser → `browser_file_upload`).
+- **Attach receipt:** right-side Receipt panel → "Upload New Receipt" (opens a file chooser → `file_upload` with the receipt's absolute path).
 - **Allocate:** open the entry → "Allocate" (this auto-saves the entry) → "Add" → New Allocation tab.
 - **Import card transactions:** report page → "Add Expense" → "Select from Available Expenses (N)" → tick rows → "Add to Claim"/"Move to". If N is 0, the Manage Expenses page (`/nui/expense`) has an **Available Expenses** section with a "Card Transactions" button to pull the latest card feed. Imported lines arrive with vendor/date/amount filled and expense type often "Undefined" — set the type, fill required fields, allocate, attach a matched receipt, then Save Expense (same per-line order as below).
 
@@ -59,7 +59,7 @@ A clean row shows "Show Allocation Summary"; an incomplete one shows "Show Error
 - If the receipt shows a GST line, enter it and pick "Invoice GST". If GST is genuinely 0.00 (or absent and you choose not to claim it), pick "Invoice no GST".
 
 ## Known quirks
-- DOM is dynamic; re-`browser_snapshot` rather than reuse element refs across actions.
+- DOM is dynamic; re-`read_page` rather than reuse element refs (`ref_N`) across actions.
 - After the first Save Expense on a fresh line, Concur may pop "saved but missing required info" — click Yes, then resolve the listed alerts (typically allocation + GST). "View Alerts" lists them.
 - GST is sometimes not broken out on a receipt (e.g. some rideshare receipts). Do not guess — ask the user how to handle it.
 - Totals include booking fees / card surcharges; enter the full amount paid as Total Amount (Inc Tax).

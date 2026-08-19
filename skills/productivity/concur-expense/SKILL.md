@@ -1,6 +1,6 @@
 ---
 name: concur-expense
-description: Build a SAP Concur expense claim via Playwright — from local receipts (PDF/PNG/JPG) and/or corporate-card transactions already waiting in Concur. Each line entered or imported, allocated to a cost-center fund, receipts attached. Draft-only by default; submits only when explicitly asked and confirmed.
+description: Build a SAP Concur expense claim via the Claude-in-Chrome browser extension — from local receipts (PDF/PNG/JPG) and/or corporate-card transactions already waiting in Concur. Each line entered or imported, allocated to a cost-center fund, receipts attached. Draft-only by default; submits only when explicitly asked and confirmed.
 ---
 
 # Concur Expense Drafter
@@ -10,8 +10,22 @@ description: Build a SAP Concur expense claim via Playwright — from local rece
 1. **Draft-only by default. NEVER click Submit (the "Submit Claim" button) unless the `submit` argument was passed AND the user confirms at the end (Step 6).** When in doubt, leave the draft for the user.
 2. **NEVER guess receipt amounts, dates, or GST.** Extract them from the receipt. If a field is unreadable or absent, ask.
 3. **Confirm extracted data with the user before touching the browser.** Cheap check, avoids garbage in Concur.
-4. Login is **manual** — the user signs in (SSO + MFA) in the Playwright browser; only then proceed. Never type credentials.
+4. Login is **manual** — the user signs in (SSO + MFA) in their Chrome tab; only then proceed. Never type credentials.
 5. When a report with a similar name already exists, **ask** whether to add to it or create a new one — never silently create a duplicate.
+
+## Browser: Claude-in-Chrome
+This skill drives Concur through the **Claude-in-Chrome** extension (`mcp__claude-in-chrome__*`), operating a tab in the user's own Chrome. Because it reuses the user's real, already-authenticated Chrome session, the Concur login normally persists between runs — no repeated SSO each time. Tool map used below:
+
+| Purpose | Tool |
+|---|---|
+| Go to a URL / back / forward | `navigate` |
+| Read the page (accessibility tree, gives `ref_N` handles) | `read_page` |
+| Click / type / screenshot / scroll / key | `computer` |
+| Set a form field (input/select/checkbox) by `ref` | `form_input` |
+| Locate an element by description → `ref_N` | `find` |
+| Upload a receipt file | `file_upload` |
+
+Prefer `read_page` over screenshots for finding elements and verifying text; act on the `ref_N` handles it returns. The DOM is dynamic — re-`read_page` rather than reuse stale refs. If the extension is not connected, ask the user to connect Claude-in-Chrome before proceeding.
 
 ## Config
 - **Cost centers:** `cost-centers.yaml` (in this skill folder). Set your own fund code(s); mark one `default: true`.
@@ -57,22 +71,22 @@ Present a compact table: file | vendor | date | amount | currency | category gue
 - **Do not proceed to the browser until the user confirms.**
 
 ### Step 3 — Open Concur, hand off for login
-1. `browser_navigate` to the Concur entry URL in `reference.md` (defaults to Monash University's). On the **first run only**, confirm the user is at Monash; if not, ask for their institution's SAP Concur / SSO entry URL and save it to `reference.md`.
-2. `browser_snapshot`. If a login / SSO page is shown, tell the user:
-   *"Log in to Concur in the browser window (SSO + MFA). Tell me when you're on the Concur home page."*
-3. Wait for the user. The persistent profile usually keeps the session between runs.
+1. `navigate` to the Concur entry URL in `reference.md` (defaults to Monash University's). On the **first run only**, confirm the user is at Monash; if not, ask for their institution's SAP Concur / SSO entry URL and save it to `reference.md`.
+2. `read_page`. If a login / SSO page is shown, tell the user:
+   *"Log in to Concur in your Chrome tab (SSO + MFA). I'll detect when you land on the Concur home page and continue."*
+3. Because Claude-in-Chrome reuses the user's real Chrome session, you are often **already logged in** — check first and skip the hand-off when the page is a `us2.concursolutions.com/*` app page. Otherwise auto-detect login: poll with `read_page`, and while the page is still Okta/SSO, wait and re-`read_page`; proceed once the URL is `https://us2.concursolutions.com/home` (or any `us2.concursolutions.com/*` app page). Tell the user once, then poll silently rather than waiting for an "I'm there" message.
 
 ### Step 4 — Create or open the report
 1. New report: Concur home → "Create Expense Claim" → fill the header (report name, date, any required policy fields) → Create Claim. (Concur labels reports "Claims".)
 2. Existing report: open it from the home list, or navigate to `/nui/expense/reports/<id>` (plural `reports`), then add lines to it.
-3. `browser_snapshot` after each navigation; act on what the snapshot shows. The Concur DOM is dynamic — re-snapshot rather than reuse stale element refs.
+3. `read_page` after each navigation; act on what it shows. The Concur DOM is dynamic — re-`read_page` rather than reuse stale element refs.
 
 ### Step 5 — Add each expense (one line per receipt)
 A per-line order that avoids Concur's "saved but missing required info" popup:
 1. Add Expense → Manually Create Expense → pick the expense type matching the category (see `reference.md`; if a mapping is unknown, ask once, then record it).
-2. Fill all required Details fields: transaction date, business purpose, vendor, city/location, GST, total amount, plus any type-specific required fields (`reference.md` lists them per type). Leave read-only/auto-derived amount fields alone.
+2. Fill all required Details fields: transaction date, business purpose, vendor, city/location, GST, total amount, plus any type-specific required fields (`reference.md` lists them per type). Use `computer` to type and `form_input` for dropdowns/checkboxes. Leave read-only/auto-derived amount fields alone.
 3. Set Receipt Status to match the GST you entered (see `reference.md` — a "GST present" status requires a non-zero GST value).
-4. Attach the receipt: trigger the upload control, then `browser_file_upload` with the receipt's absolute path.
+4. Attach the receipt: trigger the upload control, then `file_upload` with the receipt's absolute path.
 5. Click **Allocate** (this saves the entry and opens allocations) → Add → pick the cost-center fund (default from `cost-centers.yaml`, or the per-receipt override) → 100% → Save the allocation → Save the Allocate dialog.
 6. **Save Expense.** A clean line shows "Show Allocation Summary" in its row; a line still needing attention shows "Show Errors" — open it and resolve.
 7. Repeat for each receipt.
@@ -80,25 +94,25 @@ A per-line order that avoids Concur's "saved but missing required info" popup:
 ### Step 5C — Import corporate-card transactions (card mode)
 Use this instead of Step 5 when `cards` was passed. Card lines already carry vendor, date, and amount from the card feed — never overwrite those with guesses.
 1. Open the report (Step 4). Click **Add Expense**, then **Select from Available Expenses** (the menu shows a count, e.g. "Select from Available Expenses (7)"). If the count is 0, the feed has no pending charges: click **Card Transactions** on the Manage Expenses page to pull the latest, then re-check. If still 0, tell the user and stop — do not invent lines.
-2. `browser_snapshot` the Available Expenses list. Each row shows expense type (often "Undefined"), vendor, date, and amount.
+2. `read_page` the Available Expenses list. Each row shows expense type (often "Undefined"), vendor, date, and amount.
 3. **Confirm with the user before importing:** present a compact table — vendor | date | amount | card | suggested expense type | fund. Ask which rows to import (default: all that match the report's purpose) and confirm the fund per row. Do not import until the user confirms.
 4. Tick the chosen rows → **Move to** / **Add to Claim** (the selected report). They become expense lines on the report.
 5. For **each** imported line, open it and finish what the feed does not provide:
    - Set the **expense type** if it is "Undefined" (map from vendor/purpose via `reference.md`).
    - Fill type-specific required fields (business purpose, city, GST, head-count fields — see `reference.md`). The amount is from the card; leave it.
    - **Allocate** → fund (default or per-row override) → 100% → Save the allocation → Save the Allocate dialog.
-   - **Combined mode:** attach the matched local receipt (vendor + amount + date) via the upload control + `browser_file_upload`, and set Receipt Status to match the GST. If no receipt matches, leave it unattached and flag the line for the user.
+   - **Combined mode:** attach the matched local receipt (vendor + amount + date) via the upload control + `file_upload`, and set Receipt Status to match the GST. If no receipt matches, leave it unattached and flag the line for the user.
    - **Save Expense.** Resolve any "Show Errors" before moving on.
 6. Report any local receipts that matched no card line, and any card lines left without a receipt.
 
 ### Step 6 — Verify, then stop or submit
-1. `browser_take_screenshot` of the finished draft.
+1. Take a screenshot of the finished draft with the `computer` tool (action: screenshot).
 2. Report to the user: report name & number, line count, total, fund(s) used, and any receipts skipped or flagged.
 3. **If `submit` was NOT passed:** hand off — *"Draft is ready in Concur. Review and Submit yourself."* Done.
 4. **If `submit` WAS passed:** show the summary and ask for an explicit yes/no confirmation to submit (submission is outward-facing and hard to reverse). Only on an explicit "yes":
    - Click **Submit Claim**.
    - Handle any policy/agreement confirmation dialog that appears (read it; proceed only if it is the expected submit confirmation).
-   - `browser_snapshot` to confirm the report status changed to Submitted; screenshot and report the result.
+   - `read_page` to confirm the report status changed to Submitted; screenshot and report the result.
    - If a blocking validation error prevents submission, do not force it — report the error and leave the draft.
 
 ### Step 7 — Learn
@@ -107,7 +121,7 @@ If anything in the UI differed from `reference.md` (button labels, field names, 
 ---
 
 ## Failure handling
-- Selector/ref not found → re-`browser_snapshot`, find the current element, retry once. If still failing, screenshot and ask the user.
-- Session expired mid-run → pause, ask the user to re-auth, resume from the last saved line.
+- Selector/ref not found → re-`read_page` (or `find`), locate the current element, retry once. If still failing, screenshot and ask the user.
+- Session expired mid-run → pause, ask the user to re-auth in the Chrome tab, resume from the last saved line. (Rare with Claude-in-Chrome, since it reuses the persistent Chrome session.)
 - Receipt file rejected by Concur (size/format) → flag to user, continue with the rest.
 - A "Submit" confirmation appears unexpectedly (and `submit` was not requested) → **cancel/close it** — never confirm.

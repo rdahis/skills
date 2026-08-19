@@ -15,7 +15,7 @@ Built and tuned against **Monash University's** SAP Concur. The workflow is gene
 
 ## Requirements
 
-- **Claude Code** with the **Playwright MCP server** enabled (the skill drives the browser through `mcp__playwright__*` tools). See the Playwright MCP docs for setup.
+- **Claude Code** with the **Claude-in-Chrome** browser extension connected (the skill drives Concur in a tab of your own Chrome through `mcp__claude-in-chrome__*` tools). Because it reuses your real Chrome session, your Concur login usually persists between runs.
 - A **SAP Concur** account you can log into via your browser (SSO + MFA done by you).
 - Local **receipt files**.
 
