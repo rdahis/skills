@@ -107,9 +107,10 @@ Match the surrounding LaTeX: the project's own macros, citation style (`\citep` 
 **`suggest` mode:**
 
 1. Set the editor to **Reviewing** via the mode switcher at the right end of the editor toolbar (click its chevron; when the PDF pane is open it is a pencil icon). Confirm it reads Reviewing before typing — an edit made in Editing mode is untracked and cannot be retroactively tracked.
-2. Turn off **auto-close brackets** in `File → Settings` for the duration. Left on, it doubles the closing braces of every macro you type. Restore the setting afterwards.
+2. If the text you are about to type contains `{`, `[`, or `(`, turn off **auto-close brackets** in `File → Settings` first, and restore the setting afterwards. Left on, it doubles the closing brace of every macro you type. Text with no brackets — a comment line, plain prose — does not need this, and changing a user's settings for no reason is its own small harm.
 3. Locate the anchor with the editor's own find (`Cmd/Ctrl+F`), close the find bar, then select the span to replace and type the replacement. For an insertion, place the cursor and type.
 4. Apply one edit at a time. Re-read the page after each — the DOM is dynamic and refs go stale.
+5. **Say what you left behind.** The mode switcher is per user per project and persists after you finish, so a project opened in Editing is now sitting in Reviewing. Report that in Step 7 and offer to switch it back. Never restore it silently while suggestions are still pending — the user may want to keep adding tracked edits.
 
 **`markup` mode:** follow `reference/markup-mode.md`. Inline changes use the macros; whole blocks use the sentinel comments, which survive tables, figures, and verbatim where a macro argument would not. Write to the mirror only after Step 2, then complete Step 6.
 
@@ -130,7 +131,7 @@ For a mirror edit:
 
 1. Click **Recompile** and wait for the run to finish.
 2. If it fails, read the log panel, report the first real error with its file and line, and fix it in the same mode as the edit.
-3. Report: what changed, in which files, in which mode, whether it compiled, and anything you noticed but did not touch.
+3. Report: what changed, in which files, in which mode, whether it compiled, whether the editor was left in Reviewing, and anything you noticed but did not touch.
 
 ## Setup (first run for a project)
 
