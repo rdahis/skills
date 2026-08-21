@@ -30,10 +30,10 @@ The Overleaf editor is CodeMirror, which renders only the visible lines. `read_p
 Load the browser tools in **one** ToolSearch call before any browser work:
 
 ```
-select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__find,mcp__claude-in-chrome__form_input,mcp__claude-in-chrome__get_page_text
+select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__find,mcp__claude-in-chrome__form_input,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__list_connected_browsers,mcp__claude-in-chrome__select_browser,mcp__claude-in-chrome__switch_browser
 ```
 
-Do not substitute another browser surface. The in-app Browser pane, Playwright, computer-use clicking, and `WebFetch` either lack the signed-in session or cannot reach it. If the extension is not connected, ask the user to connect it and stop.
+Do not substitute another browser surface. The in-app Browser pane, Playwright, computer-use clicking, and `WebFetch` either lack the signed-in session or cannot reach it. A "not connected" error is not grounds to give up — work the ladder in Step 0 first.
 
 ## Edit modes
 
@@ -51,6 +51,26 @@ Do not substitute another browser surface. The in-app Browser pane, Playwright, 
 
 ## Instructions
 
+### Step 0 — Connect the browser, then confirm the session is signed in
+
+Both halves fail quietly and waste a run if skipped.
+
+**Connect.** `tabs_context_mcp` reporting "Claude in Chrome is not connected" usually means *this session has not selected a browser yet*, not that the extension is missing. Work the ladder in order and report a problem only at the end of it:
+
+1. `list_connected_browsers`.
+2. One entry → `select_browser` with its `deviceId`. Several → list them and let the user choose, preferring `isLocal: true`.
+3. Empty list → `switch_browser`, which broadcasts a pairing request; the user clicks **Connect** in the Chrome side panel.
+4. Still nothing → only now is the extension genuinely absent or signed out. Point the user at the Chrome Web Store listing (`fcoeoabgfenejglbffodgkkbkcdhcgfn`) and stop.
+
+**Never tell the user to install the extension before step 3 has failed.** Retrying `tabs_context_mcp` a second time is not the ladder; it returns the same error while a browser sits there unselected.
+
+**Authenticate.** Navigate to `https://www.overleaf.com/project` and confirm the dashboard loads. If the URL turns into `/login`, or the page shows a Log in form, stop there:
+
+- Never type an email, password, or SSO credential — hard rule 5.
+- Ask the user to sign in **in that tab**, and wait for them to confirm before continuing.
+- If they say they are already signed in, the extension is very likely driving a different Chrome profile than the one holding their Overleaf session. `list_connected_browsers` returns one entry per connected extension instance, not one per profile, so a single entry is not evidence that the right profile is in use. Say this rather than asking them to log in again.
+- Leave any cookie or consent banner alone. Accepting it is the user's call, not a step in this workflow.
+
 ### Step 1 — Resolve the project
 
 1. Read the registry — `~/.config/overleaf-skill/projects.yaml` if it exists, otherwise the `projects.yaml` template in this skill folder. Match the user's argument against `name`, `url`, or `mirror`.
@@ -63,7 +83,7 @@ Do not substitute another browser surface. The in-app Browser pane, Playwright, 
 Skip only if the project has no mirror.
 
 1. Open the project in Chrome — reuse an existing tab whose URL matches the project id; open one only if none exists.
-2. Left bar → **Integrations** → **Dropbox** → **Sync this project now**.
+2. Left rail → **Integrations** → **Dropbox**. The dialog states the project's real Dropbox folder and whether Overleaf has pushed all updates; if it has not, click the **"sync this project now"** link.
 3. Wait for the local folder to settle: poll the newest mtime under the mirror directory until it stops changing (typically 5–30 s; give it 90 s before reporting a problem).
 4. Stamp it: `python3 hooks/overleaf-freshness.py --stamp "<mirror-dir>"`.
 5. If a `(Conflicted copy ...)` file appeared, stop and follow the conflict procedure in `reference/dropbox-sync.md`. Never merge one blind.
@@ -74,7 +94,7 @@ Now the local copy matches Overleaf and can be read or written.
 
 1. Read the relevant file(s) from the mirror. Grep across the project for the passage, macro, label, or citation key rather than reading every file.
 2. Identify the exact anchor text you will edit — enough surrounding words to be unique in the file. You will use this string to find the spot in the browser.
-3. If there is no mirror: ask the user before downloading, then use the project menu → **Download** → **Source** and read the extracted zip.
+3. If there is no mirror: ask the user before downloading, then use `File → Download` and read the extracted zip.
 
 ### Step 4 — Draft, then confirm
 
@@ -86,8 +106,8 @@ Match the surrounding LaTeX: the project's own macros, citation style (`\citep` 
 
 **`suggest` mode:**
 
-1. Set the editor to **Reviewing** via the mode switcher at the top right. Confirm it reads Reviewing before typing — an edit made in Editing mode is untracked and cannot be retroactively tracked.
-2. Turn off **auto-close brackets** in Menu → Settings for the duration. Left on, it doubles the closing braces of every macro you type. Restore the setting afterwards.
+1. Set the editor to **Reviewing** via the mode switcher at the right end of the editor toolbar (click its chevron; when the PDF pane is open it is a pencil icon). Confirm it reads Reviewing before typing — an edit made in Editing mode is untracked and cannot be retroactively tracked.
+2. Turn off **auto-close brackets** in `File → Settings` for the duration. Left on, it doubles the closing braces of every macro you type. Restore the setting afterwards.
 3. Locate the anchor with the editor's own find (`Cmd/Ctrl+F`), close the find bar, then select the span to replace and type the replacement. For an insertion, place the cursor and type.
 4. Apply one edit at a time. Re-read the page after each — the DOM is dynamic and refs go stale.
 
@@ -115,7 +135,7 @@ For a mirror edit:
 ## Setup (first run for a project)
 
 1. Ask for the Overleaf project URL, or open `https://www.overleaf.com/project` and let the user name it.
-2. Determine whether it is mirrored: look for a directory matching the project name under each configured mirror root. Overleaf appends a number when project names collide — confirm the match by comparing a distinctive line of the main file against the browser, not by name alone.
+2. Determine whether it is mirrored: open **Integrations → Dropbox** and read the folder path the dialog states. That path is authoritative — Overleaf appends a number when project names collide, so a matching folder name proves nothing. If the integration is not linked, there is no mirror.
 3. Determine the main file (the one with `\documentclass`, unless the project sets a different main document).
 4. Check whether the mode switcher offers **Reviewing**. Record `tracked_changes: yes|no`.
 5. Append the project to `~/.config/overleaf-skill/projects.yaml`, seeding that file from the skill folder's `projects.yaml` if it does not exist yet. **Never write project entries into the skill folder** — it is often a checkout of a shared repository.

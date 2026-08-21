@@ -45,7 +45,10 @@ forced sync plus a freshness stamp sits between them.
 
 - **Claude Code** with the **Claude-in-Chrome** extension connected. The skill
   drives a tab in your own Chrome, reusing your existing Overleaf session; it
-  never handles credentials.
+  never handles credentials. Connect the extension from the Chrome **profile**
+  that holds your Overleaf login — the extension reports one connection per
+  instance, not per profile, so a connected browser can still be driving the
+  wrong profile and land on the login page.
 - An **Overleaf** account. Tracked changes and Dropbox sync are premium
   features — without them the skill still works, using markup mode and the
   browser only.

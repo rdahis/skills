@@ -34,12 +34,31 @@ it, and writes it back inside that window **silently overwrites every web edit
 made since the last push** — deleted paragraphs return, recent work disappears,
 and the loss looks like a sync glitch rather than an overwrite.
 
+## The Sync with Dropbox dialog
+
+Left rail → **Integrations** → **Dropbox** opens a dialog titled **Sync with
+Dropbox**. It is the single most useful surface in this workflow, because it
+answers three questions authoritatively:
+
+1. **Where the mirror is.** "This project will appear in your Dropbox folder at
+   `Apps/Overleaf/<Folder Name>`" — the real folder, including any numeric
+   suffix Overleaf added for a name collision. **Use this instead of guessing
+   from folder names.** It is proof; a matching name is not.
+2. **Whether Overleaf has pushed.** A status line reads "Overleaf and Dropbox
+   have processed all updates. Note that your local Dropbox might still be
+   synchronizing." That is the Overleaf half done — the Dropbox client half may
+   still be in flight, which is why the mtime poll below still matters.
+3. **How to force a push.** A link, **"sync this project now"**, in the sentence
+   beginning "Changes not appearing in Dropbox?". It is a link inside this
+   dialog, not a menu item.
+
 ## The freshness protocol
 
 Before any local read that informs an edit, and before any local write:
 
 1. Open the project in Chrome.
-2. Left bar → **Integrations** → **Dropbox** → **Sync this project now**.
+2. Left rail → **Integrations** → **Dropbox**. Read the status line. If it does
+   not report all updates processed, click **"sync this project now"**.
 3. Poll the newest mtime under the mirror directory until it stops changing:
 
    ```bash

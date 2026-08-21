@@ -10,6 +10,7 @@ extension. Correct this file when the UI moves.
 | Project dashboard | `https://www.overleaf.com/project` |
 | A project | `https://www.overleaf.com/project/<project-id>` |
 | Account settings (Dropbox / GitHub linking) | `https://www.overleaf.com/user/settings` |
+| Login (a redirect here means the session is signed out) | `https://www.overleaf.com/login` |
 
 The 24-character hex `<project-id>` in the editor URL is the stable identifier.
 Project *names* are not unique and change; store the id in `projects.yaml`.
@@ -17,24 +18,68 @@ Project *names* are not unique and change; store the id in `projects.yaml`.
 Self-hosted and enterprise instances (Overleaf Server Pro) use the same paths on
 a different host. Take the host from the URL the user gives you.
 
+## Connection and session
+
+Two preconditions, both of which fail in ways that look like something else.
+
+**The extension must be selected, not merely installed.** A "Claude in Chrome is
+not connected" error from `tabs_context_mcp` most often means this session has
+not picked a browser yet. The ladder:
+
+| Step | Call | Meaning |
+|---|---|---|
+| 1 | `list_connected_browsers` | Each entry is one connected extension instance: `deviceId`, `name`, `osPlatform`, `isLocal` |
+| 2 | `select_browser` | Attach to a known `deviceId`. Prefer `isLocal: true` |
+| 3 | `switch_browser` | Broadcasts a pairing request; the user clicks **Connect** in the Chrome side panel. Waits up to two minutes |
+| 4 | — | An empty list after step 3 is the only evidence the extension is absent |
+
+Retrying `tabs_context_mcp` is not a diagnostic — it returns the same error while
+an unselected browser sits waiting. Check the list before saying anything about
+installation.
+
+**Profiles.** The list reports one entry per connected extension instance, not
+one per Chrome profile. A single entry therefore proves nothing about *which*
+profile is being driven. When a user insists they are signed in but the tab shows
+the login page, a profile mismatch is the most likely explanation: the extension
+is connected from a profile without the Overleaf session. The fix is theirs —
+connect the extension from the profile that holds the session.
+
+**Signed-in state.** Navigating to `/project` while signed out silently redirects
+to `/login`. Confirm the dashboard actually loaded before searching for a project;
+a `find` that reports "no such project" on a login page is a misleading result.
+Never type credentials, and leave the cookie banner to the user.
+
 ## Layout
 
-- **Left rail** — file tree at the top; below it the **Integrations** section
-  (Dropbox, GitHub, Git), **History**, and the chat/review toggles. On narrow
-  windows the rail collapses to icons; widen the window rather than guessing.
-- **Centre** — the source editor (CodeMirror 6).
-- **Right** — the PDF preview and, above it, **Recompile**.
-- **Top right** — the editor **mode switcher** and **Share**.
-- **Top left** — **Menu**, holding Settings, Download, and project actions.
+- **Top left** — a menu bar: **File, Edit, Insert, View, Format, Help**. Not a
+  single "Menu" button; older documentation says otherwise.
+- **Left rail** — five icon tabs, top to bottom: **File tree**, **Project
+  search**, **Integrations**, **Review panel**, **Chat**. History is *not* here
+   — it lives under File. Below the file tree sits a **File outline** pane.
+- **Centre** — the source editor (CodeMirror 6), with a **Code / Visual** toggle
+  and the mode switcher at the right end of its toolbar.
+- **Right** — the PDF preview and, above it, **Recompile** with a warnings count.
+- **Top right** — **Share**, history, and account controls.
+
+The File menu holds: New file, New folder, Upload file, Make a copy, **Show
+version history**, Word count, Submit, **Download**, **Settings**. So the paths
+this skill needs are `File → Settings`, `File → Download`, and
+`File → Show version history`.
 
 ## The mode switcher
 
+It sits at the **right end of the editor toolbar**, beside the Code/Visual
+toggle — not in the window's top-right corner. When the PDF pane is open it
+collapses to a pencil icon with a chevron; click the **chevron** to open it.
+Clicking the label itself may only collapse or expand the control.
+
 Options, depending on the user's access level:
 
-- **Editing** — ordinary edits, untracked.
-- **Reviewing** — every edit is recorded as a tracked change. This is
-  `suggest` mode.
-- **Viewing** — read-only.
+- **Editing** — "Edit content directly". Ordinary edits, untracked.
+- **Reviewing** — "Edits become suggestions". Every edit is recorded as a
+  tracked change. This is `suggest` mode.
+- **Viewing** — read-only. Absent from the menu for users with edit access, so
+  a two-item menu is normal and not a sign of a missing plan.
 
 Users with review-only or view-only access cannot switch. If **Reviewing** is
 absent for a user with edit access, the project is not on a plan that includes
@@ -51,7 +96,7 @@ and cannot be converted into a suggestion afterwards.
 
 ## Settings that break typed LaTeX
 
-Menu → Settings:
+File → Settings:
 
 - **Auto-close brackets** — on by default. It inserts a matching `}` as you
   type `{`, so typing `\added{text}` yields `\added{text}}`. Turn it off before
@@ -81,8 +126,8 @@ replace-all on a string that appears more than once.
 
 **Never read a file's contents out of the editor DOM and treat it as the file.**
 `read_page` and `get_page_text` return rendered lines only. The complete source
-comes from the Dropbox mirror, or from Menu → **Download** → **Source** (ask the
-user before downloading).
+comes from the Dropbox mirror, or from `File → Download` (ask the user
+before downloading).
 
 ## The review panel
 
@@ -116,10 +161,27 @@ compiler (pdfLaTeX / XeLaTeX / LuaLaTeX) is set in Menu → Settings and in
 
 ## History
 
-Menu → History (or the History entry in the left rail) shows versions, labels,
+`File → Show version history` shows versions, labels,
 and who made each change. Use it to confirm what a Dropbox sync actually landed,
 and to find the state before an accident. Restoring a version is destructive to
 anything after it — surface the option, let the user do it.
+
+## Promotional overlays are invisible to the tools
+
+Overleaf shows feature-promo modals ("Did you know Overleaf supports PDF
+tagging?", Library tooltips) that render **outside the accessibility tree**.
+The consequences are specific and confusing:
+
+- `find` reports the dialog does not exist, and `read_page` does not list its
+  close button.
+- A coordinate click on its X does nothing.
+- A `ref` click on an element *behind* it reports success and has no effect —
+  the page does not navigate, and nothing indicates why.
+
+Symptom to recognise: a click that "succeeded" while the URL and the screenshot
+stay unchanged. Press **Escape**, take a screenshot to confirm the overlay is
+gone, then repeat the click. Screenshot before concluding a click failed for
+some other reason — this overlay class is the usual cause.
 
 ## Boundaries
 
