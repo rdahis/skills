@@ -1,0 +1,46 @@
+# Template for the Overleaf project registry.
+#
+# The live registry lives at ~/.config/overleaf-skill/projects.yaml. The skill
+# copies this file there on first use and appends an entry each time it meets a
+# new project. Keeping it outside the skill folder means your project list is
+# not disturbed when the skill is reinstalled or updated, and never lands in a
+# repository by accident.
+#
+#   mkdir -p ~/.config/overleaf-skill
+#   cp projects.yaml ~/.config/overleaf-skill/projects.yaml
+#
+# The skill reads this to resolve "the paper" to a project id, a main file, a
+# local Dropbox mirror, and an edit mode. Project ids are not credentials, but
+# your project list is still yours — keep it out of anything you publish.
+
+defaults:
+  # suggest | markup | direct   — see SKILL.md. Change this only if you accept
+  # that untracked edits leave no per-change accept/reject trail.
+  mode: suggest
+
+  # Where Overleaf's Dropbox integration puts project folders. Add every root
+  # you use — personal and business Dropbox installs differ.
+  mirror_roots:
+    - ~/Dropbox/Apps/Overleaf
+    # - ~/Dropbox (Personal)/Apps/Overleaf
+    # - ~/Acme Dropbox/Jane Doe/Apps/Overleaf
+
+  # How long a forced sync is trusted before the freshness protocol must run
+  # again. Overleaf pushes web edits to Dropbox every 10-20 minutes on its own.
+  freshness_ttl_minutes: 15
+
+projects: []
+
+# Example entry — delete or replace.
+#
+# projects:
+#   - name: wage-gap-paper
+#     url: https://www.overleaf.com/project/0123456789abcdef01234567
+#     mirror: ~/Dropbox/Apps/Overleaf/Wage Gap Paper
+#     main: revision/main.tex
+#     mode: suggest
+#     tracked_changes: yes      # yes | no | unknown  (needs an Overleaf premium plan)
+#     notes: |
+#       Shared preamble at the project root; the revision folder is
+#       self-contained and holds its own tables/ and figures/.
+#       Co-authors review in the Overleaf review panel.
