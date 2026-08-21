@@ -38,6 +38,9 @@ forced sync plus a freshness stamp sits between them.
   PDF, and resolve with one command.
 - Verifies every edit by re-reading it from Overleaf, then recompiles and
   reports the log.
+- **Uploads files straight into the project** rather than via the mirror, so
+  they land immediately and verifiably — with the destination folder set
+  deliberately, since Overleaf's upload dialog never says where a file will go.
 - Refuses to rename, move, or delete through the mirror, because Overleaf reads
   those as delete-and-create and loses history, tracked changes, and comments.
 

@@ -133,6 +133,64 @@ For a mirror edit:
 2. If it fails, read the log panel, report the first real error with its file and line, and fix it in the same mode as the edit.
 3. Report: what changed, in which files, in which mode, whether it compiled, whether the editor was left in Reviewing, and anything you noticed but did not touch.
 
+## Uploading files
+
+Upload through the browser, not by dropping into the Dropbox mirror. The mirror
+route is asynchronous and unconfirmable — you wait on Dropbox, then on Overleaf,
+with nothing to check against — and in `suggest` mode writing to the mirror is
+forbidden anyway. A browser upload lands immediately and can be verified in the
+same session.
+
+**An upload is never a suggestion.** There is no tracked-change equivalent for
+adding a file: it appears in the project for every collaborator at once, whatever
+mode the editor is in. Say so before uploading, and treat it as you would any
+other direct change.
+
+### The procedure
+
+1. **Check for a name collision first.** Look in the file tree for the target
+   name. If it exists, stop and ask — do not assume the overwrite behaviour.
+2. **Set the destination**, which is the file tree's current selection:
+   - **Root** → click empty space in the file-tree panel to deselect. Scroll to
+     the bottom of the tree to find blank space if the list is long.
+   - **A folder** → select that folder.
+   - A *file* being selected means the upload lands in that file's folder, which
+     is the usual way work ends up somewhere unintended.
+   The upload dialog does **not** state where the file will go, so this step is
+   the only control you have. Confirm the selection before opening the dialog.
+3. **Open the dialog** — the upload icon in the file-tree toolbar (third: new
+   file, new folder, upload), or `File → Upload file`. Both open **Add files**,
+   whose tabs are: New file, Upload, From another project, From external URL,
+   From ReadCube, From Zotero, From Mendeley.
+4. **Never click "Select files" or "select a folder".** They open a native OS
+   picker that cannot be seen or driven, and the run stalls there. Instead
+   `find` the hidden file input inside the drop zone — Overleaf uses Uppy, which
+   renders **two** hidden inputs, the first for files and the second for a
+   folder — and call `file_upload` with the *first* ref.
+5. **Source path must be session-readable.** `file_upload` rejects paths outside
+   what the session may read, and `~/Downloads` is normally rejected. Copy the
+   file into the session's working or scratchpad directory first and verify the
+   copy with `shasum -a 256` against the original, or ask the user to add the
+   folder with `/add-dir`. Do not report an upload as blocked before trying the
+   copy.
+6. **Respect the 10 MB cap** on the combined size of one `file_upload` call.
+   Split larger sets across calls.
+
+### Verifying
+
+The file tree sorts folders before files, so a file uploaded to **root appears at
+the very bottom of the tree — below the last child of the last folder** — which
+reads at a glance as though it landed inside that folder. Do not judge by
+position:
+
+1. Compare **indentation** against a known root-level entry.
+2. If still ambiguous, collapse the folders. Root-level items then sit together
+   and the placement is unarguable.
+3. Open the file. Overleaf previews images and PDFs, so a corrupt or truncated
+   upload shows immediately.
+
+To remove one, use the file tree's own delete — never the mirror, per hard rule 3.
+
 ## Setup (first run for a project)
 
 1. Ask for the Overleaf project URL, or open `https://www.overleaf.com/project` and let the user name it.

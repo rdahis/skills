@@ -99,6 +99,14 @@ Consequence for this skill: **in `suggest` mode the mirror is read-only.**
 Suggestions are made by typing in the browser. `markup` mode exists precisely
 because bulk edits cannot be both file-written and natively tracked.
 
+**A pending suggestion reaches Dropbox as plain text.** Tracked-change state is
+Overleaf-side metadata and does not survive the push, so the mirror shows the
+document *with* every unresolved insertion applied and every unresolved deletion
+still present — the union of accepted and proposed text, with nothing marking
+which is which. The mirror is therefore not a picture of the accepted document
+while a review is open. When it matters whether text is agreed or merely
+proposed, read the review panel in the browser, not the file.
+
 ## Conflicted copies
 
 Dropbox writes `main (Conflicted copy 2026-08-21).tex` when both sides changed.

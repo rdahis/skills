@@ -152,6 +152,21 @@ Renames, moves, new files, and deletions are done here — never through the
 Dropbox mirror. Right-click a file for the menu. After any of these, force a
 Dropbox sync so the mirror follows, and re-stamp freshness.
 
+The panel's toolbar holds three creation controls, left to right: **new file**,
+**new folder**, **upload**. All three, and `File → Upload file`, open the same
+**Add files** dialog (tabs: New file, Upload, From another project, From
+external URL, From ReadCube, From Zotero, From Mendeley).
+
+The dialog gives no indication of where the file will land: the destination is
+whatever the file tree has selected when it opens. Its drop zone is an Uppy
+Dashboard with two hidden file inputs — the first accepts files, the second a
+folder. Drive the first with `file_upload`; the visible "Select files" link opens
+a native picker that cannot be operated. Full procedure in `SKILL.md`.
+
+Sorting puts folders before files at every level, so a root-level file renders
+below the entire expanded subtree of the last root folder. Judge placement by
+indentation, not position.
+
 ## Compiling
 
 **Recompile** runs the compile; the log panel below the preview holds the
