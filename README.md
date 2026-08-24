@@ -25,5 +25,6 @@ cp -r skills/skills/productivity/concur-expense ~/.claude/skills/
 | Skill | Description |
 |-------|-------------|
 | [`concur-expense`](skills/productivity/concur-expense/SKILL.md) | Turn a folder of receipts into a SAP Concur expense claim — read receipts, build the report, attach images, allocate to a fund. Draft-only unless you opt in to submit. |
+| [`overleaf`](skills/productivity/overleaf/SKILL.md) | Work on an Overleaf project from Claude Code — read the source, apply edits as tracked-change suggestions in your own browser, compile, and keep a Dropbox mirror safely in sync. Suggestions by default, direct edits only if you ask. |
 
 Each skill folder is self-contained; see its `README.md` for requirements, installation, and usage.
