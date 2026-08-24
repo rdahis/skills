@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Guard against writing a stale Overleaf Dropbox mirror.
 
-Overleaf pushes web edits to Dropbox only every 10-20 minutes. Writing to a
-local mirror file that has not been refreshed since then silently overwrites
-whatever was typed on overleaf.com in the meantime.
+The Overleaf-to-Dropbox push has no guaranteed latency, and a co-author may be
+editing at any moment. Writing to a local mirror file that has not been verified
+fresh silently overwrites whatever was typed on overleaf.com in the meantime.
 
 This script has two jobs:
 
@@ -271,12 +271,13 @@ def stale_reason(project: Path, action: str) -> str:
     return (
         f"Overleaf mirror guard: {action} '{project.name}' blocked — {when}, "
         f"TTL is {ttl_seconds() // 60} min.\n"
-        f"Overleaf pushes web edits to Dropbox only every 10-20 minutes, so this "
-        f"local copy may be behind overleaf.com and writing it would overwrite "
-        f"newer web edits.\n"
-        f"Run the freshness protocol first: open the project in Chrome, "
-        f"Integrations -> Dropbox -> 'Sync this project now', wait for the local "
-        f"folder to settle, then:\n"
+        f"The Overleaf-to-Dropbox push has no guaranteed latency and a co-author "
+        f"may be editing, so this local copy may be behind overleaf.com; writing "
+        f"it would overwrite newer web edits.\n"
+        f"Run the freshness protocol first: open the project in Chrome, go to "
+        f"Integrations -> Dropbox, and read the status line. If it does not say "
+        f"all updates are processed, click 'sync this project now'. Wait for the "
+        f"local folder to settle, then:\n"
         f"  python3 {Path(__file__).resolve()} --stamp '{project}'\n"
         f"In `suggest` mode, do not write here at all — make the edit in the "
         f"Overleaf editor in Reviewing mode."

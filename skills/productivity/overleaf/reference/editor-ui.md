@@ -167,6 +167,10 @@ Sorting puts folders before files at every level, so a root-level file renders
 below the entire expanded subtree of the last root folder. Judge placement by
 indentation, not position.
 
+A same-name upload is caught: the drop zone turns red and offers **Cancel** or
+**Overwrite** rather than replacing the file or appending a suffix. Cancel is
+non-destructive and leaves no duplicate behind.
+
 ## Compiling
 
 **Recompile** runs the compile; the log panel below the preview holds the

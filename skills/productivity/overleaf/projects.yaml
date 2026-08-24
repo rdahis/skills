@@ -25,8 +25,9 @@ defaults:
     # - ~/Dropbox (Personal)/Apps/Overleaf
     # - ~/Acme Dropbox/Jane Doe/Apps/Overleaf
 
-  # How long a forced sync is trusted before the freshness protocol must run
-  # again. Overleaf pushes web edits to Dropbox every 10-20 minutes on its own.
+  # How long a verified sync is trusted before the freshness protocol must run
+  # again. There is no guaranteed push interval, and co-authors edit whenever
+  # they edit, so this is a risk setting, not a measurement.
   freshness_ttl_minutes: 15
 
 projects: []

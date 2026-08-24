@@ -5,6 +5,14 @@ browser. They are not Overleaf tracked changes — they are visible, compilable,
 reversible markup that a co-author reads in the PDF and resolves with one
 command.
 
+**Check first whether you need it.** With the editor in Reviewing mode, a plain
+mirror write was observed to arrive as a native tracked change — which is
+strictly better than markup: no package, no resolver, native accept/reject. Test
+that on the project before reaching for macros. Markup mode is the right answer
+when track changes is unavailable (no premium plan), when there is no mirror, or
+when the project's reviewers want the suggestion visible in the compiled PDF
+rather than only in the editor.
+
 Use it for a new section, a long table, an appendix, a rewritten subsection.
 Use `suggest` mode for anything a person could reasonably type by hand.
 
@@ -119,6 +127,10 @@ python3 scripts/resolve-markup.py paper/sections/*.tex --accept --label referee-
 The resolver writes a `.bak` next to each file it changes, skips macros that
 appear inside a LaTeX comment, and refuses to run on a file with an unbalanced
 or unterminated construct rather than guessing.
+
+When a block's body is removed, it also collapses the blank line left on one
+side, so repeated resolutions do not accumulate whitespace. A block whose body
+survives keeps its blank lines, since that paragraph break is load-bearing.
 
 Resolution edits files, so it belongs to the mirror path: run the freshness
 protocol first, then resolve, then round-trip and verify. Delete the temporary

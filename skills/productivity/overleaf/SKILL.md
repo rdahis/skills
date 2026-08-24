@@ -11,7 +11,7 @@ argument-hint: "[what to change, plus the Overleaf project URL or name]"
 ## Hard rules
 
 1. **Suggestion by default.** Every edit is a tracked change unless the user passed `direct` for this run. State which mode is active before the first edit and never switch modes mid-task without saying so.
-2. **Never write to the Dropbox mirror without a freshness check completed in this session** for that project (Step 2). Overleaf pushes web edits to Dropbox only every 10–20 minutes, so an unverified local file is stale and writing to it silently destroys newer web edits.
+2. **Never write to the Dropbox mirror without a freshness check completed in this session** for that project (Step 2). The Overleaf-to-Dropbox push has no guaranteed latency and a co-author may be editing right now, so an unverified local file may be behind by an unknown amount — and writing to it silently destroys newer web edits.
 3. **Never rename, move, or delete a file through the Dropbox mirror.** Overleaf reads those as delete-and-create and, in its own words, that causes "a loss of history, tracked changes, and comments." Renames, moves, and deletions go through the Overleaf file tree in the browser.
 4. **Never put a compiled PDF into the mirror folder.** Overleaf's docs: "Never manually upload a compiled PDF into your Overleaf project."
 5. **Never handle credentials.** The user is already signed in to Overleaf in their own Chrome. If they are not, ask them to sign in and stop until they confirm.
@@ -47,7 +47,9 @@ Do not substitute another browser surface. The in-app Browser pane, Playwright, 
 
 **Tracked changes and Dropbox sync are Overleaf premium features.** If `suggest` is unavailable — free plan, or the mode switcher only offers Editing — say so and offer `markup` instead, which needs no subscription. Never silently downgrade to `direct`.
 
-**Never mix `suggest` and mirror writes in the same project.** Overleaf warns that pushes from an integration "can result in the loss or displacement of track changes and comments," and advises against mixing sync with track changes. In `suggest` mode the mirror is read-only.
+**A mirror write can itself land as a tracked change.** Observed once: with the editor in **Reviewing** mode, content synced up from the mirror appeared as native tracked insertions with accept/reject, not as plain edits. Where that holds, bulk edits can be file-written *and* tracked, and `markup` mode is unnecessary. Verify it on the project in question before depending on it — write a small block, sync, and check the review panel.
+
+**Never write to the mirror copy of a file that has suggestions pending.** Overleaf warns that pushes from an integration "can result in the loss or displacement of track changes and comments." That collision is untested here. Resolve the pending suggestions first, or make the edit in the browser.
 
 ## Instructions
 
@@ -149,7 +151,17 @@ other direct change.
 ### The procedure
 
 1. **Check for a name collision first.** Look in the file tree for the target
-   name. If it exists, stop and ask — do not assume the overwrite behaviour.
+   name, so the question is raised before the dialog forces it.
+
+   Overleaf neither silently overwrites nor auto-renames. On a collision the
+   drop zone turns red and asks: *"The following files already exist in this
+   project: `<name>` — Do you want to overwrite them?"* with **Cancel** and
+   **Overwrite**. Cancelling leaves the project untouched and creates no
+   duplicate, so a collision is never destructive by accident.
+
+   **Overwrite replaces the file for every collaborator. Never click it on your
+   own initiative** — ask the user, wait for a clear yes, then click. Without
+   that yes, click Cancel and report what the dialog said.
 2. **Set the destination**, which is the file tree's current selection:
    - **Root** → click empty space in the file-tree panel to deselect. Scroll to
      the bottom of the tree to find blank space if the list is long.

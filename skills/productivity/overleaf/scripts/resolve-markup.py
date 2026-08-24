@@ -221,6 +221,16 @@ def resolve_blocks(text: str, accept: bool, label: str | None) -> tuple[str, int
                 if out[k].startswith("%"):
                     out[k] = out[k][1:]
 
+        # When the body goes too, the sentinels can leave a blank line on both
+        # sides where the source had one. Collapse the pair so repeated
+        # resolutions do not accumulate whitespace. Only when the body is
+        # dropped — a surviving body still needs its paragraph break.
+        if not keep_body:
+            prev, nxt = start - 1, end + 1
+            if (prev >= 0 and not out[prev].strip()
+                    and nxt < len(out) and not out[nxt].strip()):
+                drop.add(nxt)
+
     result = "".join(line for k, line in enumerate(out) if k not in drop)
     return result, count
 

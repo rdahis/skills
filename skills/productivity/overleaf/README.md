@@ -14,10 +14,12 @@ the one failure mode that makes that dangerous.
 
 Two facts from Overleaf's own documentation shape the whole design:
 
-1. **Overleaf pushes web edits to Dropbox only every 10–20 minutes.** An agent
-   that reads your local `main.tex`, edits it, and writes it back inside that
-   window silently overwrites everything you typed on overleaf.com since the
-   last push. Deleted paragraphs come back; recent work disappears.
+1. **The Overleaf→Dropbox push has no guaranteed latency.** Overleaf documents
+   none; a third-party tool reports 10–20 minutes; measured against a live
+   project it was under a minute. Add a co-author typing right now and your
+   local copy can be behind by an unknown amount. An agent that reads your local
+   `main.tex`, edits it, and writes it back silently overwrites everything
+   newer. Deleted paragraphs come back; recent work disappears.
 2. **Sync integrations and track changes do not mix.** Overleaf warns that
    pushes from Git — and the delete-and-create paths Dropbox takes on renames —
    "can result in the loss or displacement of track changes and comments."
