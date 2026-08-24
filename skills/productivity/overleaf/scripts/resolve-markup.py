@@ -25,11 +25,16 @@ carry no label and are left untouched when --label is given.
 
 Refuses to modify a file containing an unterminated block, a nested block, or an
 unbalanced macro argument, rather than guessing.
+
+Backups are written to ~/.cache/overleaf-skill/backups, never beside the file:
+a target inside a Dropbox-synced Overleaf mirror would otherwise sync its .bak
+into the project.
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -44,6 +49,24 @@ MAX_PASSES = 10
 
 class MarkupError(Exception):
     pass
+
+
+def backup_path(target: Path, backup_dir: str | None) -> Path:
+    """Where to put the .bak for `target`.
+
+    Never beside the file by default. A markup-mode target usually lives inside
+    a Dropbox-synced Overleaf mirror, and a sibling `main.tex.bak` syncs
+    straight into the user's project as a junk file. Backups go to a cache
+    directory outside any mirror instead.
+    """
+    if backup_dir:
+        d = Path(os.path.expanduser(backup_dir))
+    else:
+        base = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
+        d = Path(base) / "overleaf-skill" / "backups"
+    d.mkdir(parents=True, exist_ok=True)
+    flat = str(target.resolve()).lstrip("/").replace("/", "_")
+    return d / (flat + ".bak")
 
 
 # --------------------------------------------------------------------------- #
@@ -270,7 +293,9 @@ def main() -> int:
     mode.add_argument("--list", action="store_true")
     ap.add_argument("--label", help="only resolve blocks carrying this label")
     ap.add_argument("--dry-run", action="store_true", help="report, do not write")
-    ap.add_argument("--no-backup", action="store_true", help="skip writing FILE.bak")
+    ap.add_argument("--no-backup", action="store_true", help="skip writing a backup")
+    ap.add_argument("--backup-dir", help="where backups go "
+                                         "(default ~/.cache/overleaf-skill/backups)")
     args = ap.parse_args()
 
     missing = [f for f in args.files if not f.is_file()]
@@ -308,11 +333,13 @@ def main() -> int:
         if args.dry_run:
             print(f"{f}: would {verb} {nblocks} block(s), {ninline} inline macro(s)")
             continue
+        note = ""
         if not args.no_backup:
-            f.with_suffix(f.suffix + ".bak").write_text(original)
+            bak = backup_path(f, args.backup_dir)
+            bak.write_text(original)
+            note = f"  (backup: {bak})"
         f.write_text(text)
-        print(f"{f}: {verb}ed {nblocks} block(s), {ninline} inline macro(s)"
-              + ("" if args.no_backup else f"  (backup: {f.name}.bak)"))
+        print(f"{f}: {verb}ed {nblocks} block(s), {ninline} inline macro(s)" + note)
 
     return 1 if failed else 0
 

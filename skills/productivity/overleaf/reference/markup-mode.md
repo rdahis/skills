@@ -124,9 +124,13 @@ python3 scripts/resolve-markup.py paper/sections/*.tex --accept --label referee-
 | `SUGGEST ADD` block | body kept, sentinels dropped | block removed |
 | `SUGGEST DEL` block | block removed | body uncommented |
 
-The resolver writes a `.bak` next to each file it changes, skips macros that
-appear inside a LaTeX comment, and refuses to run on a file with an unbalanced
-or unterminated construct rather than guessing.
+The resolver skips macros that appear inside a LaTeX comment, and refuses to run
+on a file with an unbalanced or unterminated construct rather than guessing.
+
+Backups go to `~/.cache/overleaf-skill/backups/`, **never beside the file**.
+A markup target normally sits inside the Dropbox mirror, and a sibling
+`main.tex.bak` would sync straight into the Overleaf project as a junk file.
+Override with `--backup-dir`, or skip with `--no-backup`.
 
 When a block's body is removed, it also collapses the blank line left on one
 side, so repeated resolutions do not accumulate whitespace. A block whose body

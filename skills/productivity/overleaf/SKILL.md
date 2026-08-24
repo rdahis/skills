@@ -116,7 +116,7 @@ Match the surrounding LaTeX: the project's own macros, citation style (`\citep` 
 
 **`markup` mode:** follow `reference/markup-mode.md`. Inline changes use the macros; whole blocks use the sentinel comments, which survive tables, figures, and verbatim where a macro argument would not. Write to the mirror only after Step 2, then complete Step 6.
 
-**`direct` mode:** as `suggest`, but in Editing mode; or as `markup` without the wrappers. Snapshot the file first (`cp` to a `.bak` outside the mirror) when writing locally.
+**`direct` mode:** as `suggest`, but in Editing mode; or as `markup` without the wrappers. Snapshot the file first when writing locally — to a path **outside the mirror**, never a sibling `.bak`, which would sync into the project as a junk file.
 
 ### Step 6 — Round-trip and verify
 
