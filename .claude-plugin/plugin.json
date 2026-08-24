@@ -2,6 +2,7 @@
   "name": "rdahis-skills",
   "skills": [
     "./skills/productivity/concur-expense",
+    "./skills/productivity/moodle",
     "./skills/productivity/overleaf"
   ]
 }

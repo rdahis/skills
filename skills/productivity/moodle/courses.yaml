@@ -1,0 +1,44 @@
+# Template for the Moodle course registry.
+#
+# The live registry lives at ~/.config/moodle-skill/courses.yaml. Copy this file
+# there on first use; the skill appends an entry each time it meets a new
+# course. Keeping it outside the skill folder means your course list is not
+# disturbed when the skill is reinstalled, and never lands in a repository by
+# accident.
+#
+#   mkdir -p ~/.config/moodle-skill
+#   cp courses.yaml ~/.config/moodle-skill/courses.yaml
+#
+# The skill reads this to resolve a shorthand the user says ("PPS", "the
+# honours seminar") to a Moodle site and a course id. Course ids are not
+# credentials, but your teaching load is still yours — keep it out of anything
+# you publish.
+
+site:
+  # The Moodle base URL. Preset to Monash University's, which is public. If you
+  # are elsewhere, replace it — the skill asks for it on the first run and
+  # writes the answer here.
+  url: https://learning.monash.edu
+
+  # Timezone Moodle displays for your account. The skill confirms this against
+  # Moodle itself before setting any date; this is only the expected value.
+  timezone: Australia/Melbourne
+
+defaults:
+  # Course used when the user names no course and gives no URL. Leave empty to
+  # always require one.
+  course: ""
+
+courses: []
+
+# Example entry — delete or replace.
+#
+# courses:
+#   - name: pps
+#     title: Principles of Public Policy
+#     id: 00000
+#     url: https://learning.monash.edu/course/view.php?id=00000
+#     notes: |
+#       Weekly quizzes in sections 1-12; teaching break between weeks 6 and 7.
+#       Quizzes require Safe Exam Browser; week 3 is the reference configuration.
+#       Tutorial groups are named "Tut 01".."Tut 12" and matched by student ID.
